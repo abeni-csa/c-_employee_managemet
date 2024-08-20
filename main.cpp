@@ -1,304 +1,246 @@
 #include <iostream>
-#include <string.h>
+#include <memory>
+#include <string>
 using namespace std;
-class Emp
+
+class Employee
 {
-    int eid;
-    char name[20];
-    float basic;
+    int id;
+    string name;
+    float salary;
 
 public:
-    Emp() //D
-    {
-        eid = 00;
-        strcpy(name, "Not Given");
-        basic = 00;
-    }
+    Employee() : id(0), name("Not Given"), salary(0.0f) {}
 
-    Emp(int d, const char *nm, float bs)//PARA
-    {
-        eid = d;
-        strcpy(name, nm);
-        basic = bs;
-    }
-    void display()
+    Employee(int id, const string& name, float salary) : id(id), name(name), salary(salary) {}
+
+    void display() const
     {
         cout << "\n************************************";
-        cout << "\nEmployee Id : " << eid;
-        cout << "\nName : " << name;
-        cout << "\nSalary : " << basic;
+        cout << "\nEmployee ID: " << id;
+        cout << "\nName: " << name;
+        cout << "\nSalary: " << salary;
         cout << "\n************************************";
     }
 
-    int getid()
-    {
-        return eid;
-    }
-    const char *getname()
-    {
-        return name;
-    }
-    float getbasic()
-    {
-        return basic;
-    }
-    void setid(int d)
-    {
-        this->eid = d;
-    }
-    void setename(const char *nm)
-    {
-        strcpy(this->name, nm);
-    }
-    void setbasic(float bs)
-    {
-        this->basic = bs;
-    }
-}; // emp class end
+    int getId() const { return id; }
+    const string& getName() const { return name; }
+    float getSalary() const { return salary; }
+
+    void setId(int newId) { id = newId; }
+    void setName(const string& newName) { name = newName; }
+    void setSalary(float newSalary) { salary = newSalary; }
+};
 
 class Node
 {
-    Emp data;
-    Node *next;
+    Employee data;
+    shared_ptr<Node> next;
 
 public:
-    Node(Emp d)
-    {
-        data = d;
-        next = NULL;
-    }
-    Emp getdata()
-    {
-        return data;
-    }
-    Node *getnext()
-    {
-        return next;
-    }
+    Node(const Employee& employee) : data(employee), next(nullptr) {}
 
-    void setdata(Emp d)
-    {
-        this->data = d;
-    }
-    void setnext(Node *n)
-    {
-        this->next = n;
-    }
-}; // node class end
+    Employee getData() const { return data; }
+    shared_ptr<Node> getNext() const { return next; }
+
+    void setData(const Employee& employee) { data = employee; }
+    void setNext(shared_ptr<Node> nextNode) { next = nextNode; }
+};
 
 class Company
 {
-    Node *start;
+    shared_ptr<Node> head;
 
 public:
-    Company()
+    Company() : head(nullptr) {}
+
+    void addEmployee(const Employee& employee)
     {
-        start = NULL;
-    }
-    void addemp(Emp e)
-    {
-        Node *temp = new Node(e);
-        temp->setnext(start);
-        start = temp;
+        auto newNode = make_shared<Node>(employee);
+        newNode->setNext(head);
+        head = newNode;
     }
 
-    void removeempById(int id)
+    void removeEmployeeById(int id)
     {
-        if (start == NULL)
+        if (!head)
         {
-            cout << "\nNo employee data is here ";
+            cout << "\nNo employee data available.";
             return;
         }
-        Node *p = start; // when node to be deleted first node
-        if (id == p->getdata().getid())
+
+        if (head->getData().getId() == id)
         {
-            start = start->getnext();
-            p->getdata().display();
-            cout << "\nthis employee is deleted ...";
-            delete p;
+            auto nodeToDelete = head;
+            head = head->getNext();
+            nodeToDelete->getData().display();
+            cout << "\nEmployee deleted.";
             return;
         }
-        if (p->getnext() == NULL)
+
+        auto current = head;
+        while (current->getNext() && current->getNext()->getData().getId() != id)
         {
-            cout << "\nnot Found ";
-            return;
+            current = current->getNext();
         }
-        while (p->getnext()!= NULL)
+
+        if (current->getNext())
         {
-            Emp e1 = p->getnext()->getdata();
-            if (id == e1.getid())
-            {
-                Node *q = p->getnext();
-                p->setnext(q->getnext());
-                q->getdata().display();
-                cout << "\nNow Deleted this employee";
-                delete q;
-                return;
-            }
-            p = p->getnext();
+            auto nodeToDelete = current->getNext();
+            current->setNext(nodeToDelete->getNext());
+            nodeToDelete->getData().display();
+            cout << "\nEmployee deleted.";
         }
-        cout << "\nnot Found ";
+        else
+        {
+            cout << "\nEmployee not found.";
+        }
     }
 
-    void editiEmp(int id)
+    void editEmployee(int id)
     {
-        if (start == NULL)
+        auto current = head;
+        while (current)
         {
-            cout << "\nNo Employee is here";
-            return;
-        }
-        Node *p = start;
-        while (p != NULL)
-        {
-            Emp e = p->getdata();
-            if (p->getdata().getid() == id)
+            if (current->getData().getId() == id)
             {
-                Emp e = p->getdata();
-                char ans;
-                char name[20];
-                float sal;
-                cout << "\nDo you wan change name : (Y/N)";
-                cin >> ans;
-                if (ans == 'Y' || ans == 'y')
+                Employee employee = current->getData();
+                char choice;
+                string newName;
+                float newSalary;
+
+                cout << "\nDo you want to change the name? (Y/N): ";
+                cin >> choice;
+                if (choice == 'Y' || choice == 'y')
                 {
-                    cout << "\n Enter New Name : ";
-                    cin >> name;
-                    e.setename(name);
+                    cout << "\nEnter new name: ";
+                    cin.ignore();
+                    getline(cin, newName);
+                    employee.setName(newName);
                 }
-                cout << "\nDo you wan change Salary : (Y/N)";
-                cin >> ans;
-                if (ans == 'Y' || ans == 'y')
+
+                cout << "\nDo you want to change the salary? (Y/N): ";
+                cin >> choice;
+                if (choice == 'Y' || choice == 'y')
                 {
-                    cout << "\n Enter new salary : ";
-                    cin >> sal;
-                    e.setbasic(sal);
+                    cout << "\nEnter new salary: ";
+                    cin >> newSalary;
+                    employee.setSalary(newSalary);
                 }
-                p->setdata(e);
+
+                current->setData(employee);
                 return;
             }
-            p = p->getnext();
+            current = current->getNext();
         }
 
-        cout << "\nRecord not Found ";
+        cout << "\nEmployee record not found.";
     }
 
-    void searchEmpById(int id)
+    void searchEmployeeById(int id) const
     {
-        if (start == NULL)
+        auto current = head;
+        while (current)
         {
-            cout << "\nNot Found";
-            return;
-        }
-        Node *p = start;
-        while (p != NULL)
-        {
-            Emp e1 = p->getdata();
-            if (e1.getid() == id)
+            if (current->getData().getId() == id)
             {
-                cout << "\nEmployee Found ...";
-                e1.display();
+                cout << "\nEmployee found:";
+                current->getData().display();
                 return;
             }
-            p = p->getnext();
+            current = current->getNext();
         }
-        cout << "\nEmployee is not Found";
+        cout << "\nEmployee not found.";
     }
 
-    void DisplayallEmp()
+    void displayAllEmployees() const
     {
-        if (start == NULL)
+        if (!head)
         {
-            cout << "\n\n No employee data here ";
-            cout << "\n\n";
+            cout << "\nNo employee data available.";
             return;
         }
-        Node *p = start;
-        while (p != NULL)
+
+        auto current = head;
+        while (current)
         {
-            /* code */ p->getdata().display();
-            p = p->getnext();
+            current->getData().display();
+            current = current->getNext();
         }
     }
-
-}; // Company class End
+};
 
 int main()
 {
-    int ch = 0;
-    Company lt;
-    while (ch != 6)
+    Company company;
+    int choice = 0;
+
+    while (choice != 6)
     {
         cout << "\n\n*************************************";
-        cout << "\n\t1.Add Employee.";
-        cout << "\n\t2.Display Employee.";
-        cout << "\n\t3.Search By id.";
-        cout << "\n\t4.Delete by Id.";
-        cout << "\n\t5.Edit Employee data.";
-        cout << "\n\t6.Exit";
-        cout << "\n*************************************\n\n";
-        cout << "\n\tEnter the choice: ";
-        cin >> ch;
-        switch (ch)
+        cout << "\n\t1. Add Employee";
+        cout << "\n\t2. Display Employees";
+        cout << "\n\t3. Search Employee by ID";
+        cout << "\n\t4. Remove Employee by ID";
+        cout << "\n\t5. Edit Employee Data";
+        cout << "\n\t6. Exit";
+        cout << "\n*************************************\n";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice)
         {
         case 1:
         {
             int id;
-            char name[20];
-            float bs;
-            cout << "\n Enter the ID : ";
+            string name;
+            float salary;
+            cout << "\nEnter the ID: ";
             cin >> id;
-            cout << "\n Enter the name :";
-            cin >> name;
-            cout << "\n Enter the Salary: ";
-            cin >> bs;
-            Emp e1(id, name, bs);
-            lt.addemp(e1);
+            cout << "Enter the name: ";
+            cin.ignore();
+            getline(cin, name);
+            cout << "Enter the salary: ";
+            cin >> salary;
+            Employee employee(id, name, salary);
+            company.addEmployee(employee);
+            break;
         }
-        break;
         case 2:
-            lt.DisplayallEmp();
-            /* code */
+            company.displayAllEmployees();
             break;
         case 3:
         {
             int id;
-            cout << "\nEnter the id to search : ";
+            cout << "\nEnter the ID to search: ";
             cin >> id;
-            lt.searchEmpById(id);
+            company.searchEmployeeById(id);
+            break;
         }
-        /* code */
-        break;
-
         case 4:
         {
             int id;
-            cout << "\nEnter the id to Delete  : ";
+            cout << "\nEnter the ID to remove: ";
             cin >> id;
-            lt.removeempById(id);
+            company.removeEmployeeById(id);
+            break;
         }
-        /* code */
-        break;
-
         case 5:
         {
             int id;
-            cout << "\nEnter the id for edit user  : ";
+            cout << "\nEnter the ID to edit: ";
             cin >> id;
-            lt.editiEmp(id);
+            company.editEmployee(id);
+            break;
         }
-
-        /* code */
-        break;
         case 6:
-        {
-            cout << "\nEnd the Programm!!!";
-        }
-        /* code */
-        break;
-
+            cout << "\nExiting the program.";
+            break;
         default:
-            cout << "\nInvalid choice:";
+            cout << "\nInvalid choice.";
             break;
         }
     }
+
+    return 0;
 }
