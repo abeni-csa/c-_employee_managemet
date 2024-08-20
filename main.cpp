@@ -32,10 +32,10 @@ public:
     void setSalary(float newSalary) { salary = newSalary; }
 };
 
-class BaseManager
+class Node
 {
     Employee data;
-    shared_ptr<BaseManager> next;
+    shared_ptr<Node> next;
 
 public:
     Node(const Employee& employee) : data(employee), next(nullptr) {}
@@ -49,14 +49,14 @@ public:
 
 class Company
 {
-    shared_ptr<BaseManager> head;
+    shared_ptr<Node> head;
 
 public:
     Company() : head(nullptr) {}
 
     void addEmployee(const Employee& employee)
     {
-        auto newNode = make_shared<BaseManager>(employee);
+        auto newNode = make_shared<Node>(employee);
         newNode->setNext(head);
         head = newNode;
     }
