@@ -1,3 +1,5 @@
+// rewrite everything in rust bro
+
 #include <iostream>
 #include <memory>
 #include <string>
