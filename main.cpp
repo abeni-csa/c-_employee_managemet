@@ -246,3 +246,4 @@ int main()
 
     return 0;
 }
+/*who give a shit about c++*/
